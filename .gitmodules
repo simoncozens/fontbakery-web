@@ -1,0 +1,3 @@
+[submodule "python/fontbakery"]
+	path = python/fontbakery
+	url = https://github.com/simoncozens/fontbakery
