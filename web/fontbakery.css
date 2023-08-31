@@ -71,3 +71,11 @@
         height: calc(100vh - 50px);
         flex-wrap: nowrap !important;
     }
+
+    #v-pills-tab {
+        overflow-y: scroll;
+    }
+
+    #loading {
+        height: 38px;
+    }

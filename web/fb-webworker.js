@@ -44,15 +44,18 @@ async function loadPyodideAndPackages() {
     'axisregistry',
     'setuptools',
   ]);
-  console.log('Ready!');
 }
 const pyodideReadyPromise = loadPyodideAndPackages();
 
 
 self.onmessage = async (event) => {
   // make sure loading is done
-  await pyodideReadyPromise;
   const {id, files, profile} = event.data;
+  await pyodideReadyPromise;
+  self.postMessage({"ready": true});
+  if (id == "justload") {
+    return;
+  }
 
   const callback = (msg) => self.postMessage(msg.toJs());
 
@@ -81,6 +84,8 @@ self.onmessage = async (event) => {
           exclude_checks=exclude_checks
         )
     `);
+    self.postMessage({done: true});
+
   } catch (error) {
     self.postMessage({error: error.message, id});
   }

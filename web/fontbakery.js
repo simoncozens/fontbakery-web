@@ -8,15 +8,20 @@ const SORT_RESULT = {
 };
 const fbWorker = new Worker('./fb-webworker.js');
 
+/** Show that we have loaded the Python code, allow baking */
+function showLoaded() {
+  $("#loading").hide();
+  $("#test").show();
+}
+
 /** Update the progress bar
  *
  * No longer used, may be used again one day.
  * @param {string} p - Percent of progress
 */
 function setProgress(p) {
-  const pInt = parseInt(p, 10);
-  $('.progress-bar').html(`${pInt}%`);
-  $('.progress-bar').css({'width': `${p}%`});
+  console.log("Got progress tick", p)
+  $('#progress .progress-bar').css({'width': `${p/4}%`});
 }
 
 /** Display an error modal
@@ -111,6 +116,14 @@ function addProfile(profilename, col) {
 }
 
 fbWorker.onmessage = (event) => {
+  if ('ready' in event.data) {
+    showLoaded();
+    return;
+  }
+  if ('done' in event.data) {
+    $('#v-pills-tab button:first-child').tab('show');
+    return;
+  }
   if ('error' in event.data) {
     showError(event.data.error);
     // otherwise data is a Map
@@ -123,11 +136,6 @@ fbWorker.onmessage = (event) => {
 
 Dropzone.autoDiscover = false;
 files = {};
-const asyncRun = (() => {
-  return new Promise((onSuccess) => {
-    fbWorker.postMessage({files});
-  });
-});
 
 $(function() {
   Dropzone.options.dropzone = {
@@ -152,4 +160,7 @@ $(function() {
     $('#progress').show();
     fbWorker.postMessage({profile, files});
   });
+
+  fbWorker.postMessage({id: "justload"});
+
 });
