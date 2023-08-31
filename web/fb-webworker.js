@@ -1,8 +1,12 @@
 importScripts('https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js');
 
 // This is our magic WASM-hacked fontbakery
-const fbversion = 'fontbakery-0.9.0a3.dev21+gf83eeb69-py3-none-any.whl';
-const fbhome = self.location.href.replace('fb-webworker.js', fbversion);
+const FBVERSION = 'fontbakery-0.9.0a3.dev22+gf0ee7af7-py3-none-any.whl'
+const FBWEBAPIVERSION = 'fbwebapi-0.1.0-py3-none-any.whl'
+
+const fbhome = self.location.href.replace('fb-webworker.js', FBVERSION);
+const fbwebapihome = self.location.href.replace('fb-webworker.js', FBWEBAPIVERSION);
+
 const EXCLUDE_CHECKS = [
   // Needs dependencies
   'com.adobe.fonts/check/freetype_rasterizer',
@@ -36,6 +40,7 @@ async function loadPyodideAndPackages() {
   const micropip = pyodide.pyimport('micropip');
   await micropip.install([
     fbhome,
+    fbwebapihome,
     'axisregistry',
     'setuptools',
   ]);
@@ -67,7 +72,7 @@ self.onmessage = async (event) => {
   self.exclude_checks = EXCLUDE_CHECKS;
   try {
     await self.pyodide.runPythonAsync(`
-        from fontbakery.api import run_fontbakery
+        from fbwebapi import run_fontbakery
         from js import filenames, callback, exclude_checks, profile
 
         run_fontbakery(filenames,
