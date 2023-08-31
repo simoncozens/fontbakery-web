@@ -32,6 +32,9 @@ const EXCLUDE_CHECKS = [
   'com.google.fonts/check/designspace_has_default_master',
   'com.google.fonts/check/designspace_has_consistent_glyphset',
   'com.google.fonts/check/designspace_has_consistent_codepoints',
+  // Other checks
+  'com.google.fonts/check/metadata/family_directory_name', // No directories!
+
 ];
 
 async function loadPyodideAndPackages() {
