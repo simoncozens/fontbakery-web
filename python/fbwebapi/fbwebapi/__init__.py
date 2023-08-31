@@ -1,3 +1,4 @@
+import argparse
 from fontbakery.commands.check_profile import get_module, log_levels
 from fontbakery.reporters.serialize import SerializeReporter
 from fontbakery.checkrunner import (
@@ -33,7 +34,7 @@ class ProgressReporter(SerializeReporter):
 
 def run_fontbakery(
     paths,
-    callback=None,
+    callback,
     profilename="universal",
     loglevels="INFO",
     checks=None,
@@ -41,9 +42,23 @@ def run_fontbakery(
 ):
     loglevels = log_levels[loglevels]
     profile = get_module_profile(get_module("fontbakery.profiles." + profilename))
+    argument_parser = argparse.ArgumentParser()
+    # Hack
+    argument_parser.add_argument(
+            "--list-checks",
+            default=False,
+            action="store_true",
+            help="List the checks available in the selected profile.",
+        )
+    values_keys = profile.setup_argparse(argument_parser)
+    args = argument_parser.parse_args(paths)
+    values = {}
+    for key in values_keys:
+        if hasattr(args, key):
+            values[key] = getattr(args, key)
     runner = CheckRunner(
         profile,
-        values={"fonts": paths},
+        values=values,
         config={
             "custom_order": None,
             "explicit_checks": checks,
