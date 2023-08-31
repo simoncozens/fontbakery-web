@@ -61,7 +61,7 @@ function showResult(data) {
       <h4>${data.get('description')}</h4>
       <p class="text-muted">${data.get('key')}</p>
       <div class="rationale">
-      ${ CmarkGFM.convert(data.get('rationale').replace(/^ +/gm, '')) }
+      ${ CmarkGFM.convert((data.get('rationale')||"").replace(/^ +/gm, '')) }
       </div>
       <ul>
       </ul>
@@ -85,6 +85,29 @@ function showResult(data) {
   // Sort the tabs based on result
   tinysort('div#v-pills-tab>button', {'data': 'sortorder'});
   tinysort('div#v-pills-tabContent>div', {'data': 'sortorder'});
+}
+
+/* Add a profile from the profiles list */
+PROFILES = {
+  "opentype": "OpenType (standards compliance)",
+  "universal": "Universal (community best practices)",
+  "googlefonts": "Google Fonts (for submission to Google)",
+  "adobefonts": "Adobe Fonts",
+  "fontbureau": "Font Bureau",
+  "fontwerk": "Fontwerk"
+}
+
+function addProfile(profilename, col) {
+  var checked = profilename == "universal" ? "checked": "";
+  var widget = $(`
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="flexRadioDefault" id="profile-${profilename}" ${checked}>
+        <label class="form-check-label" for="profile-${profilename}">
+           ${PROFILES[profilename]}
+        </label>
+    </div>
+  `);
+  $(`#profiles .row #col${col}`).append(widget)
 }
 
 fbWorker.onmessage = (event) => {
@@ -119,6 +142,9 @@ $(function() {
     },
   };
   Dropzone.discover();
+  Object.keys(PROFILES).forEach( (profilename, ix) => {
+    addProfile(profilename, ix % 2);
+  });
   $('#startModal').show();
   $('#test').click(function() {
     const profile = $('.form-check-input:checked')[0].id.replace('profile-', '');
