@@ -62,7 +62,7 @@
         box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
     }
 
-    img {
+    img.img-fluid {
         height: 30vh !important;
     }
 
@@ -78,4 +78,9 @@
 
     #loading {
         height: 38px;
+    }
+
+    .navbar-brand {
+        align-items: center;
+        display: flex;
     }
