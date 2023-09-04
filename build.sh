@@ -6,6 +6,7 @@ git submodule init python/fontbakery
 git submodule update python/fontbakery
 
 echo "Building fontbakery"
+rm -rf python/fontbakery/dist/
 cd python/fontbakery && python3 -m build && cd ../.. && cp python/fontbakery/dist/*whl docs/
 FONTBAKERY_VERSION=`ls docs/fontbakery*whl | sed 's/docs\///'`
 if [ "$FONTBAKERY_VERSION" = "" ]
