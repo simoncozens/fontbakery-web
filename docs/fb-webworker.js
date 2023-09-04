@@ -1,13 +1,18 @@
 importScripts('https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js');
 
 // This is our magic WASM-hacked fontbakery
-const FBVERSION = 'fontbakery-0.9.0a3.dev26+g6788f8f7-py3-none-any.whl'
+const FBVERSION = 'fontbakery-0.9.0a3.dev28+g5305b0e8-py3-none-any.whl'
+const GLYPHSETSVERSION = 'glyphsets-0.6.3.dev11+g853b386-py3-none-any.whl'
 const FBWEBAPIVERSION = 'fbwebapi-0.1.0-py3-none-any.whl'
 
 const fbhome = self.location.href.replace('fb-webworker.js', FBVERSION);
 const fbwebapihome = self.location.href.replace(
     'fb-webworker.js',
     FBWEBAPIVERSION,
+);
+const glyphsetshome = self.location.href.replace(
+    'fb-webworker.js',
+    GLYPHSETSVERSION,
 );
 
 const EXCLUDE_CHECKS = [
@@ -21,6 +26,10 @@ const EXCLUDE_CHECKS = [
   'com.google.fonts/check/fontdata_namecheck',
   'com.google.fonts/check/vertical_metrics_regressions',
   'com.google.fonts/check/fontbakery_version',
+  'com.google.fonts/check/metadata/includes_production_subsets',
+  'com.google.fonts/check/metadata/designer_profiles',
+  'com.google.fonts/check/description/broken_links',
+  'com.google.fonts/check/metadata/broken_links',
   // Shaping checks
   'com.google.fonts/check/render_own_name',
   'com.google.fonts/check/shaping/regression',
@@ -28,6 +37,7 @@ const EXCLUDE_CHECKS = [
   'com.google.fonts/check/shaping/collides',
   'com.google.fonts/check/dotted_circle',
   'com.google.fonts/check/soft_dotted',
+  'com.google.fonts/check/metadata/can_render_samples',
   // UFO checks
   'com.daltonmaag/check/ufo_required_fields',
   'com.daltonmaag/check/ufo_recommended_fields',
@@ -37,13 +47,21 @@ const EXCLUDE_CHECKS = [
   'com.google.fonts/check/designspace_has_consistent_codepoints',
   // Other checks
   'com.google.fonts/check/metadata/family_directory_name', // No directories!
+  'com.google.fonts/check/slant_direction', // Needs uharfbuzz
 ];
 
 async function loadPyodideAndPackages() {
   self.pyodide = await loadPyodide();
   await pyodide.loadPackage('micropip');
   const micropip = pyodide.pyimport('micropip');
-  await micropip.install([fbhome, fbwebapihome, 'axisregistry', 'setuptools']);
+  await pyodide.loadPackage(glyphsetshome);
+  await micropip.install([
+    fbhome,
+    fbwebapihome,
+    'axisregistry',
+    'setuptools',
+    'lxml',
+  ]);
 }
 const pyodideReadyPromise = loadPyodideAndPackages();
 
