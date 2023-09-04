@@ -21,7 +21,6 @@ function showLoaded() {
 */
 function showProgress(progress) {
   const pct = progress.get('progress');
-  console.log('Got progress tick', progress);
   $('#progress .progress-bar').css({'width': `${pct}%`});
   if (pct == 100) {
     $('#progress').hide();
@@ -55,7 +54,7 @@ function showResult(data) {
   const result = data.get('result');
   const checkid = data.get('key');
   let thispill = $(`#v-pills-tab button[data-checkid="${checkid}"]`);
-  console.log("Adding result for ",checkid)
+  // console.log("Adding result for ",checkid)
   if (thispill.length == 0) {
     // Add a new pill
     thispill = $(`
@@ -196,11 +195,12 @@ $(function() {
   });
   $('#startModal').show();
   $('#test').click(function() {
-    const profile = $('.form-check-input:checked')[0].id.replace('profile-', '');
+    const profile = $('#profiles .form-check-input:checked')[0].id.replace('profile-', '');
+    const fulllists = $("#full-lists").is(':checked');
     const loglevels = $('#loglevels').val();
     $('#test').hide();
     $('#progress').show();
-    fbWorker.postMessage({profile, files, loglevels});
+    fbWorker.postMessage({profile, files, loglevels, fulllists});
   });
 
   fbWorker.postMessage({id: 'justload'});

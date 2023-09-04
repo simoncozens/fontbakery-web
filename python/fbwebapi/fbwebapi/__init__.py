@@ -39,6 +39,7 @@ def run_fontbakery(
     loglevels="INFO",
     checks=None,
     exclude_checks=None,
+    full_lists=False,
 ):
     loglevels = log_levels[loglevels]
     profile = get_module_profile(get_module("fontbakery.profiles." + profilename))
@@ -63,6 +64,7 @@ def run_fontbakery(
             "custom_order": None,
             "explicit_checks": checks,
             "exclude_checks": exclude_checks,
+            "full_lists": full_lists,
         },
     )
     prog = ProgressReporter(callback, loglevels)

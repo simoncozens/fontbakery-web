@@ -86,13 +86,23 @@
                                     <div class="previews"></div>
                                 </form>
                                 <div class="check-profile pt-3 pl-3 pr-3">
-                                    <h6> Log levels</h6>
-                                    <select class="custom-select" id="loglevels">
-                                      <option value="PASS">PASS</option>
-                                      <option value="INFO" selected>INFO</option>
-                                      <option value="WARN">WARN</option>
-                                      <option value="FAIL">FAIL</option>
-                                    </select>
+                                    <div class="row">
+                                        <div class="col">
+                                            <h6> Log levels</h6>
+                                            <select class="custom-select" id="loglevels">
+                                              <option value="PASS">PASS</option>
+                                              <option value="INFO" selected>INFO</option>
+                                              <option value="WARN">WARN</option>
+                                              <option value="FAIL">FAIL</option>
+                                            </select>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input id="full-lists" class="form-check-input" type="checkbox" value=""/>
+                                                <label class="form-check-label" for="full-lists">Display full lists? </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="check-profile pt-3 pl-3 pr-3" id="profiles">

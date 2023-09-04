@@ -67,7 +67,7 @@ const pyodideReadyPromise = loadPyodideAndPackages();
 
 self.onmessage = async (event) => {
   // make sure loading is done
-  const {id, files, profile, loglevels} = event.data;
+  const {id, files, profile, loglevels, fulllists} = event.data;
   await pyodideReadyPromise;
   self.postMessage({ready: true});
   if (id == 'justload') {
@@ -87,16 +87,18 @@ self.onmessage = async (event) => {
   self.callback = callback;
   self.profile = profile;
   self.loglevels = loglevels;
+  self.fulllists = fulllists;
   self.exclude_checks = EXCLUDE_CHECKS;
   try {
     await self.pyodide.runPythonAsync(`
         from fbwebapi import run_fontbakery
-        from js import filenames, callback, exclude_checks, profile, loglevels
+        from js import filenames, callback, exclude_checks, profile, loglevels, fulllists
 
         run_fontbakery(filenames,
           profilename=profile,
           callback=callback,
           loglevels=loglevels,
+          full_lists=fulllists,
           exclude_checks=exclude_checks
         )
     `);
