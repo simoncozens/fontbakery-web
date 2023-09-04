@@ -8,6 +8,10 @@ from fontbakery.checkrunner import (
     ENDCHECK,
     distribute_generator,
 )
+import fontbakery
+import pkgutil
+from importlib import import_module
+import re
 
 
 class ProgressReporter(SerializeReporter):
@@ -72,3 +76,42 @@ def run_fontbakery(
     reporters = [prog.receive]
     status_generator = runner.run()
     distribute_generator(status_generator, reporters)
+
+def dump_all_the_checks():
+    checks = {}
+    profiles_modules = [
+        x.name
+        for x in pkgutil.walk_packages(fontbakery.__path__, "fontbakery.")
+        if x.name.startswith("fontbakery.profiles")
+    ]
+    for profile_name in profiles_modules:
+        try:
+            imported = import_module(profile_name, package=None)
+        except BaseException:
+            continue
+        profile = get_module_profile(imported)
+        if not profile:
+            continue
+        profile_name = profile_name[20:]
+        for section in profile._sections.values():
+            for check in section._checks:
+                if check.id not in checks:
+                    checks[check.id] = {
+                        "sections": set(),
+                        "profiles": set(),
+                    }
+                checks[check.id]["sections"].add(section.name)
+                checks[check.id]["profiles"].add(profile_name)
+                for attr in ["proposal", "rationale", "severity", "description"]:
+                    if getattr(check, attr):
+                        md = getattr(check, attr)
+                        if attr == "rationale":
+                            md = re.sub(r"(?m)^\s+", "", md)
+                            checks[check.id][attr] = md
+                        else:
+                            checks[check.id][attr] = md
+
+    for ck in checks.values():
+        ck["sections"] = list(ck["sections"])
+        ck["profiles"] = list(ck["profiles"])
+    return checks

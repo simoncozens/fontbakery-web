@@ -13,6 +13,7 @@ const fbWorker = new Worker('./fb-webworker.js');
 function showLoaded() {
   $('#loading').hide();
   $('#test').show();
+  $('#listcheckscontainer').show();
 }
 
 /** Update the progress bar
@@ -32,6 +33,15 @@ function showProgress(progress) {
     }
   }
 }
+
+/** Start again
+*/
+function reset() {
+  $('#normalresults').show();
+  $('#listchecks').hide();
+  $('#startModal').show();
+}
+
 
 /** Display an error modal
  *
@@ -154,9 +164,72 @@ function addProfile(profilename, col) {
   $(`#profiles .row #col${col}`).append(widget);
 }
 
+/**
+ * Display all the checks
+ *
+ * @param {Map} checks: Metadata about the checks
+ **/
+function listChecks(checks) {
+  $('#startModal').hide();
+  $('#listchecks').show();
+  $('#normalresults').hide();
+  for (const [id, check] of checks) {
+    const card=$(`
+      <div class="card my-4">
+        <div class="card-header">
+          <code>${id}</code>
+        </div>
+      <div class="card-body">
+        <a name="${id}"><h2> ${check.get('description')} </h2></a>
+        ${CmarkGFM.convert(check.get('rationale')||'')}
+        <table class="table">
+          <tr>
+            <th>Sections</th>
+            <td class="sections"></td>
+          </tr>
+          <tr>
+            <th>Profiles</th>
+            <td class="profiles"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    `);
+    if (check.has('severity')) {
+      card.find('.table').prepend(
+          $(`<tr><th>Severity</th><td>${check.get('severity')}</td></tr>`)
+      );
+    }
+    if (check.has('proposal')) {
+      card.find('.table').prepend(
+          $(`<a href="${check.get('proposal')}">More information</a>`)
+      );
+    }
+    for (const section of check.get('sections')) {
+      card.find('.sections').append(
+          $(`<span class="badge rounded-pill bg-primary"> ${section} </span>`)
+      );
+    }
+    for (const profile of check.get('profiles')) {
+      card.find('.profiles').append(
+          $(`<span class="badge rounded-pill bg-primary"> ${profile} </span>`)
+      );
+    }
+    $('#checks').append(card);
+  }
+}
+
 fbWorker.onmessage = (event) => {
+  if ('checks' in event.data) {
+    listChecks(event.data.checks);
+    return;
+  }
   if ('ready' in event.data) {
     showLoaded();
+    return;
+  }
+  if ('checks' in event.data) {
+    console.log(event.data);
     return;
   }
   if ('done' in event.data) {
@@ -196,12 +269,13 @@ $(function() {
   $('#startModal').show();
   $('#test').click(function() {
     const profile = $('#profiles .form-check-input:checked')[0].id.replace('profile-', '');
-    const fulllists = $("#full-lists").is(':checked');
+    const fulllists = $('#full-lists').is(':checked');
     const loglevels = $('#loglevels').val();
-    $('#test').hide();
-    $('#progress').show();
     fbWorker.postMessage({profile, files, loglevels, fulllists});
   });
-
+  $('#listchecksbtn').click(function() {
+    fbWorker.postMessage({id: 'listchecks'});
+  });
+  $('.leftarrow').click(reset);
   fbWorker.postMessage({id: 'justload'});
 });

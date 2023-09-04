@@ -37,3 +37,11 @@
     #progress-wrapper {
         width: 200px;
     }
+
+    .leftarrow {
+        display:inline-block !important;
+        font-size: 40pt;
+    }
+    .leftarrow:hover {
+        text-decoration: none;
+    }

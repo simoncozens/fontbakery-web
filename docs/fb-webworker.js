@@ -70,7 +70,21 @@ self.onmessage = async (event) => {
   const {id, files, profile, loglevels, fulllists} = event.data;
   await pyodideReadyPromise;
   self.postMessage({ready: true});
+  self.profile = profile;
   if (id == 'justload') {
+    return;
+  }
+  if (id == 'listchecks') {
+    try {
+      const checks = await self.pyodide.runPythonAsync(`
+          from fbwebapi import dump_all_the_checks
+
+          dump_all_the_checks()
+      `);
+      self.postMessage({checks: checks.toJs()});
+    } catch (error) {
+      self.postMessage({error: error.message});
+    }
     return;
   }
 
@@ -85,7 +99,6 @@ self.onmessage = async (event) => {
 
   self.filenames = filenames;
   self.callback = callback;
-  self.profile = profile;
   self.loglevels = loglevels;
   self.fulllists = fulllists;
   self.exclude_checks = EXCLUDE_CHECKS;
