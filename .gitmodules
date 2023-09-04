@@ -2,3 +2,7 @@
 	path = python/fontbakery
 	url = https://github.com/simoncozens/fontbakery
 	branch = wasm
+[submodule "python/glyphsets"]
+	path = python/glyphsets
+	url = https://github.com/googlefonts/glyphsets
+	branch = minimal
