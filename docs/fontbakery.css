@@ -26,61 +26,14 @@
         background-color: rgba(166, 234, 255, 0.3)
     }
 
-    #v-pills-tab {
-        gap: 5px;
-    }
-
-    .bg-PASS {
-        background-color: #8df0a8 !important;
-    }
-
-    .bg-SKIP {
-        background-color: #acb0ad !important;
-    }
-
-    .bg-WARN {
-        background-color: #e0cf9b !important;
-    }
-
-    .bg-FAIL {
-        background-color: #e0999b !important;
-    }
-
-    .bg-ERROR {
-        background-color: #050505 !important;
-        color: #888888 !important;
-    }
-
-    .bg-INFO {
-        background-color: #bdbcf7 !important;
-    }
-
-    .nav-pills .nav-link.active,
-    .nav-pills .show>.nav-link {
-        color: inherit !important;
-        background-image: linear-gradient(rgb(0 0 0/20%) 0 0);
-        box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
-    }
-
     img.img-fluid {
         height: 30vh !important;
-    }
-
-    .flex-scroll {
-        overflow-y: auto;
-        height: calc(100vh - 50px);
-        flex-wrap: nowrap !important;
-    }
-
-    #v-pills-tab {
-        overflow-y: scroll;
     }
 
     #loading {
         height: 38px;
     }
 
-    .navbar-brand {
-        align-items: center;
-        display: flex;
+    #progress-wrapper {
+        width: 200px;
     }

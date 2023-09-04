@@ -27,7 +27,7 @@ class ProgressReporter(SerializeReporter):
         elif status == ENDCHECK:
             self._items[key]["key"] = check.id
             self._items[key]["doc"] = check.__doc__
-            self.callback({"progress": 100 * done / float(self.count)})
+            self.callback({"progress": 100 * done / float(self.count)} | self._counter)
             if message >= self.loglevels:
                 self.callback(self._items[key])
 

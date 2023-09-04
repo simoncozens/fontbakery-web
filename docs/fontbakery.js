@@ -4,6 +4,7 @@ const SORT_RESULT = {
   'WARN': 'bb',
   'INFO': 'cc',
   'ERROR': 'dd',
+  'PASS': 'ee',
   'SKIP': 'zz',
 };
 const fbWorker = new Worker('./fb-webworker.js');
@@ -16,12 +17,21 @@ function showLoaded() {
 
 /** Update the progress bar
  *
- * No longer used, may be used again one day.
- * @param {string} p - Percent of progress
+ * @param {Map} progress - Progress message
 */
-function setProgress(p) {
-  console.log('Got progress tick', p);
-  $('#progress .progress-bar').css({'width': `${p}%`});
+function showProgress(progress) {
+  const pct = progress.get('progress');
+  console.log('Got progress tick', progress);
+  $('#progress .progress-bar').css({'width': `${pct}%`});
+  if (pct == 100) {
+    $('#progress').hide();
+  }
+  for (const result of Object.keys(SORT_RESULT)) {
+    const count = progress.get(result);
+    if (count) {
+      $(`#${result}-count`).html(count);
+    }
+  }
 }
 
 /** Display an error modal
@@ -158,7 +168,7 @@ fbWorker.onmessage = (event) => {
     showError(event.data.error);
     // otherwise data is a Map
   } else if (event.data.has('progress')) {
-    setProgress(event.data.get('progress'));
+    showProgress(event.data);
   } else {
     showResult(event.data);
   }
@@ -180,6 +190,7 @@ $(function() {
     },
   };
   Dropzone.discover();
+  $('[data-toggle="tooltip"]').tooltip();
   Object.keys(PROFILES).forEach( (profilename, ix) => {
     addProfile(profilename, ix % 2);
   });
