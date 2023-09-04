@@ -11,9 +11,8 @@ from fontbakery.checkrunner import (
 
 
 class ProgressReporter(SerializeReporter):
-    def __init__(self, callback):
-        super().__init__(log_levels["INFO"])
-        self._tick = 0
+    def __init__(self, callback, loglevels):
+        super().__init__(loglevels)
         self.count = 0
         self.callback = callback
 
@@ -22,14 +21,15 @@ class ProgressReporter(SerializeReporter):
         status, message, identity = event
         section, check, iterargs = identity
         key = self._get_key(identity)
+        done = self.count - self._counter["(not finished)"]
         if status == START:
             self.count = len(message)
         elif status == ENDCHECK:
-            self._tick += 1
             self._items[key]["key"] = check.id
             self._items[key]["doc"] = check.__doc__
-            self.callback(self._items[key])
-            self.callback({"progress": 100 * self._tick / float(self.count)})
+            self.callback({"progress": 100 * done / float(self.count)})
+            if message >= self.loglevels:
+                self.callback(self._items[key])
 
 
 def run_fontbakery(
@@ -65,7 +65,7 @@ def run_fontbakery(
             "exclude_checks": exclude_checks,
         },
     )
-    prog = ProgressReporter(callback)
+    prog = ProgressReporter(callback, loglevels)
     prog.runner = runner
     reporters = [prog.receive]
     status_generator = runner.run()

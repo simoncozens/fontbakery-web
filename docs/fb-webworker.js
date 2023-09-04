@@ -1,11 +1,14 @@
 importScripts('https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js');
 
 // This is our magic WASM-hacked fontbakery
-const FBVERSION = 'fontbakery-0.9.0a3.dev22+gf0ee7af7-py3-none-any.whl'
+const FBVERSION = 'fontbakery-0.9.0a3.dev26+g6788f8f7-py3-none-any.whl'
 const FBWEBAPIVERSION = 'fbwebapi-0.1.0-py3-none-any.whl'
 
 const fbhome = self.location.href.replace('fb-webworker.js', FBVERSION);
-const fbwebapihome = self.location.href.replace('fb-webworker.js', FBWEBAPIVERSION);
+const fbwebapihome = self.location.href.replace(
+    'fb-webworker.js',
+    FBWEBAPIVERSION,
+);
 
 const EXCLUDE_CHECKS = [
   // Needs dependencies
@@ -34,29 +37,22 @@ const EXCLUDE_CHECKS = [
   'com.google.fonts/check/designspace_has_consistent_codepoints',
   // Other checks
   'com.google.fonts/check/metadata/family_directory_name', // No directories!
-
 ];
 
 async function loadPyodideAndPackages() {
   self.pyodide = await loadPyodide();
   await pyodide.loadPackage('micropip');
   const micropip = pyodide.pyimport('micropip');
-  await micropip.install([
-    fbhome,
-    fbwebapihome,
-    'axisregistry',
-    'setuptools',
-  ]);
+  await micropip.install([fbhome, fbwebapihome, 'axisregistry', 'setuptools']);
 }
 const pyodideReadyPromise = loadPyodideAndPackages();
 
-
 self.onmessage = async (event) => {
   // make sure loading is done
-  const {id, files, profile} = event.data;
+  const {id, files, profile, loglevels} = event.data;
   await pyodideReadyPromise;
-  self.postMessage({"ready": true});
-  if (id == "justload") {
+  self.postMessage({ready: true});
+  if (id == 'justload') {
     return;
   }
 
@@ -65,30 +61,28 @@ self.onmessage = async (event) => {
   // Write the files
   const filenames = [];
   for (const [name, buffer] of Object.entries(files)) {
-    pyodide.FS.writeFile(
-        name,
-        buffer,
-    );
+    pyodide.FS.writeFile(name, buffer);
     filenames.push(name);
   }
 
   self.filenames = filenames;
   self.callback = callback;
   self.profile = profile;
+  self.loglevels = loglevels;
   self.exclude_checks = EXCLUDE_CHECKS;
   try {
     await self.pyodide.runPythonAsync(`
         from fbwebapi import run_fontbakery
-        from js import filenames, callback, exclude_checks, profile
+        from js import filenames, callback, exclude_checks, profile, loglevels
 
         run_fontbakery(filenames,
           profilename=profile,
           callback=callback,
+          loglevels=loglevels,
           exclude_checks=exclude_checks
         )
     `);
     self.postMessage({done: true});
-
   } catch (error) {
     self.postMessage({error: error.message, id});
   }

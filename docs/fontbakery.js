@@ -10,8 +10,8 @@ const fbWorker = new Worker('./fb-webworker.js');
 
 /** Show that we have loaded the Python code, allow baking */
 function showLoaded() {
-  $("#loading").hide();
-  $("#test").show();
+  $('#loading').hide();
+  $('#test').show();
 }
 
 /** Update the progress bar
@@ -20,8 +20,8 @@ function showLoaded() {
  * @param {string} p - Percent of progress
 */
 function setProgress(p) {
-  console.log("Got progress tick", p)
-  $('#progress .progress-bar').css({'width': `${p/4}%`});
+  console.log('Got progress tick', p);
+  $('#progress .progress-bar').css({'width': `${p}%`});
 }
 
 /** Display an error modal
@@ -43,8 +43,9 @@ function showResult(data) {
   $('#startModal').hide();
   const tabid = $('#v-pills-tab').children().length;
   const result = data.get('result');
-  let checkid = data.get("key");
+  const checkid = data.get('key');
   let thispill = $(`#v-pills-tab button[data-checkid="${checkid}"]`);
+  console.log("Adding result for ",checkid)
   if (thispill.length == 0) {
     // Add a new pill
     thispill = $(`
@@ -56,7 +57,7 @@ function showResult(data) {
           data-sortorder="${SORT_RESULT[result]}"
           type="button"
           role="tab"
-          data-checkid=${data.get("key")}
+          data-checkid=${data.get('key')}
           aria-controls="v-pills-${tabid}">${data.get('description')}</button>
       `);
     $('#v-pills-tab').append(thispill);
@@ -70,12 +71,12 @@ function showResult(data) {
         id="v-pills-${tabid}"
         role="tabpanel"
         aria-labelledby="v-pills-${tabid}-tab"
-        data-checkid=${data.get("key")}
+        data-checkid=${data.get('key')}
       >
         <h4>${data.get('description')}</h4>
         <p class="text-muted">${data.get('key')}</p>
         <div class="rationale">
-        ${ CmarkGFM.convert((data.get('rationale')||"").replace(/^ +/gm, '')) }
+        ${ CmarkGFM.convert((data.get('rationale')||'').replace(/^ +/gm, '')) }
         </div>
         <ul class="results">
         </ul>
@@ -84,26 +85,26 @@ function showResult(data) {
     $('#v-pills-tabContent').append(thistab);
   }
   // Update pill / tab results with worst result
-  if (SORT_RESULT[result] < thispill.data("sortorder")) {
-    thispill.removeClass (function (index, className) {
-      return (className.match (/(^|\s)bg-\S+/g) || []).join(' ');
+  if (SORT_RESULT[result] < thispill.data('sortorder')) {
+    thispill.removeClass(function(index, className) {
+      return (className.match(/(^|\s)bg-\S+/g) || []).join(' ');
     });
     thispill.addClass('bg-' + result);
-    thispill.data("sortorder", SORT_RESULT[result])
-    thistab.data("sortorder", SORT_RESULT[result])
+    thispill.data('sortorder', SORT_RESULT[result]);
+    thistab.data('sortorder', SORT_RESULT[result]);
   }
 
   for (log of data.get('logs')) {
-    let where = "ul.results"
-    if (data.has("filename")) {
-      var filename = data.get("filename")
-      where = `ul.results li ul[data-filename='${filename}']`
+    let where = 'ul.results';
+    if (data.has('filename')) {
+      const filename = data.get('filename');
+      where = `ul.results li ul[data-filename='${filename}']`;
       if (thistab.find(where).length == 0) {
         thistab.find('ul.results').append(`<li>
           <b>${filename}</b>
           <ul data-filename="${filename}">
           </ul>
-        </li>`)
+        </li>`);
       }
     }
     thistab.find(where).append($(`
@@ -123,17 +124,17 @@ function showResult(data) {
 
 /* Add a profile from the profiles list */
 PROFILES = {
-  "opentype": "OpenType (standards compliance)",
-  "universal": "Universal (community best practices)",
-  "googlefonts": "Google Fonts (for submission to Google)",
-  "adobefonts": "Adobe Fonts",
-  "fontbureau": "Font Bureau",
-  "fontwerk": "Fontwerk"
-}
+  'opentype': 'OpenType (standards compliance)',
+  'universal': 'Universal (community best practices)',
+  'googlefonts': 'Google Fonts (for submission to Google)',
+  'adobefonts': 'Adobe Fonts',
+  'fontbureau': 'Font Bureau',
+  'fontwerk': 'Fontwerk',
+};
 
 function addProfile(profilename, col) {
-  var checked = profilename == "universal" ? "checked": "";
-  var widget = $(`
+  const checked = profilename == 'universal' ? 'checked': '';
+  const widget = $(`
     <div class="form-check">
         <input class="form-check-input" type="radio" name="flexRadioDefault" id="profile-${profilename}" ${checked}>
         <label class="form-check-label" for="profile-${profilename}">
@@ -141,7 +142,7 @@ function addProfile(profilename, col) {
         </label>
     </div>
   `);
-  $(`#profiles .row #col${col}`).append(widget)
+  $(`#profiles .row #col${col}`).append(widget);
 }
 
 fbWorker.onmessage = (event) => {
@@ -185,11 +186,11 @@ $(function() {
   $('#startModal').show();
   $('#test').click(function() {
     const profile = $('.form-check-input:checked')[0].id.replace('profile-', '');
+    const loglevels = $('#loglevels').val();
     $('#test').hide();
     $('#progress').show();
-    fbWorker.postMessage({profile, files});
+    fbWorker.postMessage({profile, files, loglevels});
   });
 
-  fbWorker.postMessage({id: "justload"});
-
+  fbWorker.postMessage({id: 'justload'});
 });
