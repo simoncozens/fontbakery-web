@@ -1,7 +1,5 @@
 importScripts('https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js');
 
-const FBWEBAPIVERSION = 'fbwebapi-0.1.0-py3-none-any.whl'
-
 const EXCLUDE_CHECKS = [
   'com.google.fonts/check/fontbakery_version', // We download the latest each time
   'com.daltonmaag/check/ufo_required_fields',
@@ -30,7 +28,6 @@ async function loadPyodideAndPackages() {
   self.pyodide = await loadPyodide();
   await pyodide.loadPackage('micropip');
   const micropip = pyodide.pyimport('micropip');
-  await pyodide.loadPackage(reroot(FBWEBAPIVERSION));
   await micropip.install('glyphsets', false, false);
   await micropip.install([
     'axisregistry',
@@ -45,6 +42,13 @@ async function loadPyodideAndPackages() {
     'dehinter',
   ]);
   await micropip.install('fontbakery', false, false, null, true);
+  await pyodide.runPythonAsync(`
+    from pyodide.http import pyfetch
+    response = await pyfetch("${reroot('fbwebapi.py')}")
+    with open("fbwebapi.py", "wb") as f:
+        f.write(await response.bytes())
+  `);
+  await pyodide.pyimport('fbwebapi');
 }
 const pyodideReadyPromise = loadPyodideAndPackages();
 

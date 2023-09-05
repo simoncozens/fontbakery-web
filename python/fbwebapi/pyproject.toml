@@ -1,7 +1,0 @@
-[project]
-name = "fbwebapi"
-description = "Bridge between WASM and Fontbakery for the WEB API"
-version = "0.1.0"
-authors = [
-    { name = "Simon Cozens", email = "simon@simon-cozens.org" }
-]
