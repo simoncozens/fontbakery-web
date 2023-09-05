@@ -1,19 +1,16 @@
 importScripts('https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js');
 
-// This is our magic WASM-hacked fontbakery
-const FBVERSION = 'fontbakery-0.9.0a3.dev28+g5305b0e8-py3-none-any.whl'
-const GLYPHSETSVERSION = 'glyphsets-0.6.3.dev11+g853b386-py3-none-any.whl'
+const FBVERSION = 'fontbakery-0.9.0a3.dev25+g68c331c2-py3-none-any.whl'
 const FBWEBAPIVERSION = 'fbwebapi-0.1.0-py3-none-any.whl'
 
-const fbhome = self.location.href.replace('fb-webworker.js', FBVERSION);
-const fbwebapihome = self.location.href.replace(
-    'fb-webworker.js',
-    FBWEBAPIVERSION,
-);
-const glyphsetshome = self.location.href.replace(
-    'fb-webworker.js',
-    GLYPHSETSVERSION,
-);
+/** Produce an absolute URL for a wheel
+*
+* @param {string} path: the wheel's relative URL
+* @return {string}
+*/
+function reroot(path) {
+  return self.location.href.replace('fb-webworker.js', path);
+}
 
 const EXCLUDE_CHECKS = [
   // Needs dependencies
@@ -54,14 +51,20 @@ async function loadPyodideAndPackages() {
   self.pyodide = await loadPyodide();
   await pyodide.loadPackage('micropip');
   const micropip = pyodide.pyimport('micropip');
-  await pyodide.loadPackage(glyphsetshome);
+  await pyodide.loadPackage(reroot(FBWEBAPIVERSION));
+  await micropip.install('glyphsets', false, false);
   await micropip.install([
-    fbhome,
-    fbwebapihome,
     'axisregistry',
     'setuptools',
     'lxml',
+    'fontTools>=4.39.0',
+    'opentypespec',
+    'munkres',
+    'mock',
+    'requests',
+    'beziers>=0.5.0',
   ]);
+  await micropip.install('fontbakery', false, false, null, true);
 }
 const pyodideReadyPromise = loadPyodideAndPackages();
 

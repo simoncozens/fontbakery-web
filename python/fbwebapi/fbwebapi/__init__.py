@@ -1,3 +1,24 @@
+import sys
+import types
+from mock import MagicMock
+import unicodedata
+
+sys.modules["unicodedata2"] = sys.modules["unicodedata"]
+for notreal in [
+    "cmarkgfm",
+    "cmarkgfm.cmark",
+    "toml",
+    "rich",
+    "pyyaml",
+    "yaml",
+    "glyphsLib",
+    "glyphsLib.glyphdata",
+    "defcon",
+]:
+    sys.modules[notreal] = MagicMock()
+
+import glyphsets
+
 import argparse
 from fontbakery.commands.check_profile import get_module, log_levels
 from fontbakery.reporters.serialize import SerializeReporter
@@ -50,11 +71,11 @@ def run_fontbakery(
     argument_parser = argparse.ArgumentParser()
     # Hack
     argument_parser.add_argument(
-            "--list-checks",
-            default=False,
-            action="store_true",
-            help="List the checks available in the selected profile.",
-        )
+        "--list-checks",
+        default=False,
+        action="store_true",
+        help="List the checks available in the selected profile.",
+    )
     values_keys = profile.setup_argparse(argument_parser)
     args = argument_parser.parse_args(paths)
     values = {}
@@ -76,6 +97,7 @@ def run_fontbakery(
     reporters = [prog.receive]
     status_generator = runner.run()
     distribute_generator(status_generator, reporters)
+
 
 def dump_all_the_checks():
     checks = {}
