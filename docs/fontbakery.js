@@ -7,6 +7,37 @@ const SORT_RESULT = {
   'PASS': 'ee',
   'SKIP': 'zz',
 };
+
+const NOWASM = (s) => `
+This check cannot be run in the web environment. This is because ${s}.
+The web version of fontbakery is not a full replacement for the Python
+version, and we recommend that you install fontbakery and check your
+fonts locally to ensure that all checks are run.`;
+const CANT_COMPILE = (s) => NOWASM(`the ${s} library cannot be compiled for WASM`);
+const NEEDS_NETWORK = NOWASM("it needs access to the network");
+const EXCUSES = {
+  // Needs dependencies
+  'com.adobe.fonts/check/freetype_rasterizer': CANT_COMPILE('Freetype'),
+  'com.google.fonts/check/ots': CANT_COMPILE('OpenType Sanitizer'),
+  'com.google.fonts/check/alt_caron:googlefonts': NOWASM('the check requires a library (babelfont) with a Rust dependency'),
+  // Needs network
+  'com.google.fonts/check/vendor_id': NEEDS_NETWORK,
+  'com.google.fonts/check/fontdata_namecheck': NEEDS_NETWORK,
+  'com.google.fonts/check/vertical_metrics_regressions': NEEDS_NETWORK,
+  'com.google.fonts/check/metadata/includes_production_subsets': NEEDS_NETWORK,
+  'com.google.fonts/check/metadata/designer_profiles': NEEDS_NETWORK,
+  'com.google.fonts/check/description/broken_links': NEEDS_NETWORK,
+  'com.google.fonts/check/metadata/broken_links': NEEDS_NETWORK,
+  'com.google.fonts/check/version_bump': NEEDS_NETWORK,
+  'com.google.fonts/check/production_glyphs_similarity': NEEDS_NETWORK,
+  // Shaping checks
+  'com.google.fonts/check/render_own_name': NOWASM('it requires the Freetype library, which is unavailable in WASM'),
+  'com.google.fonts/check/dotted_circle': CANT_COMPILE('cffsubr [required by ufo2ft]'),
+  'com.google.fonts/check/metadata/can_render_samples': CANT_COMPILE('Harfbuzz'),
+  'com.google.fonts/check/slant_direction': CANT_COMPILE('Harfbuzz'),
+  // Other checks
+  'com.google.fonts/check/metadata/family_directory_name': NOWASM('there are no directories in the WASM environment'),
+};
 const fbWorker = new Worker('./fb-webworker.js');
 
 /** Show that we have loaded the Python code, allow baking */
@@ -113,28 +144,32 @@ function showResult(data) {
     thistab.data('sortorder', SORT_RESULT[result]);
   }
 
-  for (log of data.get('logs')) {
-    let where = 'ul.results';
-    if (data.has('filename')) {
-      const filename = data.get('filename');
-      where = `ul.results li ul[data-filename='${filename}']`;
-      if (thistab.find(where).length == 0) {
-        thistab.find('ul.results').append(`<li>
-          <b>${filename}</b>
-          <ul data-filename="${filename}">
-          </ul>
-        </li>`);
+  if (result == 'ERROR' && EXCUSES[checkid]) {
+    thistab.find('ul.results').append(`<li>${EXCUSES[checkid]}</li>`);
+  } else {
+    for (log of data.get('logs')) {
+      let where = 'ul.results';
+      if (data.has('filename')) {
+        const filename = data.get('filename');
+        where = `ul.results li ul[data-filename='${filename}']`;
+        if (thistab.find(where).length == 0) {
+          thistab.find('ul.results').append(`<li>
+            <b>${filename}</b>
+            <ul data-filename="${filename}">
+            </ul>
+          </li>`);
+        }
       }
+      thistab.find(where).append($(`
+            <li>
+              <span
+                class="bg-${log.get('status')} font-weight-bold">
+                ${log.get('status')}
+              </span>:
+              <div>${CmarkGFM.convert(log.get('message'))}</div>
+            </li>
+          `));
     }
-    thistab.find(where).append($(`
-          <li>
-            <span
-              class="bg-${log.get('status')} font-weight-bold">
-              ${log.get('status')}
-            </span>:
-            <div>${CmarkGFM.convert(log.get('message'))}</div>
-          </li>
-        `));
   }
   // Sort the tabs based on result
   tinysort('div#v-pills-tab>button', {'data': 'sortorder'});
