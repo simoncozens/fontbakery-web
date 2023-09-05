@@ -180,7 +180,7 @@ function showResult(data) {
 PROFILES = {
   'opentype': 'OpenType (standards compliance)',
   'universal': 'Universal (community best practices)',
-  'googlefonts': 'Google Fonts (for submission to Google)',
+  'googlefonts': 'Google Fonts',
   'adobefonts': 'Adobe Fonts',
   'fontbureau': 'Font Bureau',
   'fontwerk': 'Fontwerk',
